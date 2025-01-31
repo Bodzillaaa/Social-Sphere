@@ -32,7 +32,6 @@ const Posts = ({ feedType }) => {
         if (!response.ok)
           throw new Error(data.error || "Failed to fetch posts");
 
-        console.log("data", data);
         return data;
       } catch (error) {
         throw new Error(error);

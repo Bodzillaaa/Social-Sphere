@@ -8,7 +8,7 @@ import {
   MdOutlineMail,
 } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 
 const SignUpPage = () => {
@@ -18,6 +18,8 @@ const SignUpPage = () => {
     fullName: "",
     password: "",
   });
+
+  const queryClient = useQueryClient();
 
   const { mutate, isError, isPending, error } = useMutation({
     mutationFn: async ({ email, username, fullName, password }) => {
@@ -44,6 +46,7 @@ const SignUpPage = () => {
       }
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success("Account created successfully");
     },
   });
