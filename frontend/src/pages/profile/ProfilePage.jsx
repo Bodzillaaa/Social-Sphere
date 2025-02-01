@@ -12,8 +12,10 @@ import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
+import useFollow from "../../hooks/useFollow";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
@@ -25,7 +27,7 @@ const ProfilePage = () => {
 
   const { username } = useParams();
 
-  const isMyProfile = true;
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   const {
     data: user,
@@ -49,11 +51,11 @@ const ProfilePage = () => {
     },
   });
 
-  const memberSinceDate = formatMemberSinceDate(user?.createdAt);
+  const { follow, isPending: isFollowing } = useFollow({});
 
-  useEffect(() => {
-    refetch();
-  }, [username, refetch]);
+  const isMyProfile = authUser?._id === user?._id;
+  const memberSinceDate = formatMemberSinceDate(user?.createdAt);
+  const isFollow = authUser?.following.includes(user?._id);
 
   const handleImgChange = (e, state) => {
     const file = e.target.files[0];
@@ -66,6 +68,10 @@ const ProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  useEffect(() => {
+    refetch();
+  }, [username, refetch]);
 
   return (
     <>
@@ -145,9 +151,11 @@ const ProfilePage = () => {
                 {!isMyProfile && (
                   <button
                     className="btn btn-outline btn-sm rounded-full"
-                    onClick={() => alert("Followed successfully")}
+                    onClick={() => follow(user?._id)}
                   >
-                    Follow
+                    {isFollowing && <LoadingSpinner size="sm" />}
+                    {!isFollowing && isFollow && "Unfollow"}
+                    {!isFollowing && !isFollow && "Follow"}
                   </button>
                 )}
                 {(coverImg || profileImg) && (
