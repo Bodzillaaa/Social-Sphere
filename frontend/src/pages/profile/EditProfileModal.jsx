@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
 
 const EditProfileModal = ({ authUser }) => {
   const [formData, setFormData] = useState({
@@ -15,38 +15,11 @@ const EditProfileModal = ({ authUser }) => {
     currentPassword: "",
   });
 
-  const queryClient = useQueryClient();
+  const { updateProfile, isUpdatingProfile } = useUpdateProfile();
 
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async () => {
-      try {
-        const response = await fetch(`/api/users/update`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Error updating profile");
-        }
-        return data;
-      } catch (error) {
-        throw new Error(error);
-      }
-    },
-    onSuccess: () => {
-      toast.success("Profile updated successfully");
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-        queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   useEffect(() => {
     if (authUser) {
@@ -61,10 +34,6 @@ const EditProfileModal = ({ authUser }) => {
       });
     }
   }, [authUser]);
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   return (
     <>
@@ -81,9 +50,9 @@ const EditProfileModal = ({ authUser }) => {
           <h3 className="my-3 text-lg font-bold">Update Profile</h3>
           <form
             className="flex flex-col gap-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              updateProfile();
+              await updateProfile(formData);
             }}
           >
             <div className="flex flex-wrap gap-2">

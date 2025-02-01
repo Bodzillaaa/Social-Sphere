@@ -12,11 +12,11 @@ import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
 import useFollow from "../../hooks/useFollow";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import toast from "react-hot-toast";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
@@ -28,7 +28,6 @@ const ProfilePage = () => {
 
   const { username } = useParams();
 
-  const queryClient = useQueryClient();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   const {
@@ -53,39 +52,7 @@ const ProfilePage = () => {
     },
   });
 
-  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
-    mutationFn: async () => {
-      try {
-        const response = await fetch(`/api/users/update`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            coverImg,
-            profileImg,
-          }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Error updating profile");
-        }
-        return data;
-      } catch (error) {
-        throw new Error(error);
-      }
-    },
-    onSuccess: () => {
-      toast.success("Profile updated successfully");
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-        queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
-      ]);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { updateProfile, isUpdatingProfile } = useUpdateProfile();
 
   const { follow, isPending: isFollowing } = useFollow({});
 
@@ -197,7 +164,11 @@ const ProfilePage = () => {
                 {(coverImg || profileImg) && (
                   <button
                     className="btn btn-primary btn-sm ml-2 rounded-full px-4 text-white"
-                    onClick={() => updateProfile()}
+                    onClick={async () => {
+                      await updateProfile({ coverImg, profileImg });
+                      setCoverImg(null);
+                      setProfileImg(null);
+                    }}
                   >
                     {isUpdatingProfile ? (
                       <LoadingSpinner size="sm" />
