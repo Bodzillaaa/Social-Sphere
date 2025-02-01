@@ -12,10 +12,11 @@ import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
 import useFollow from "../../hooks/useFollow";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const [coverImg, setCoverImg] = useState(null);
@@ -27,6 +28,7 @@ const ProfilePage = () => {
 
   const { username } = useParams();
 
+  const queryClient = useQueryClient();
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
   const {
@@ -48,6 +50,40 @@ const ProfilePage = () => {
         console.log("eta? Error fetching user profile", error);
         throw new Error(error);
       }
+    },
+  });
+
+  const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
+    mutationFn: async () => {
+      try {
+        const response = await fetch(`/api/users/update`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            coverImg,
+            profileImg,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "Error updating profile");
+        }
+        return data;
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+        queryClient.invalidateQueries({ queryKey: ["userProfile"] }),
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -147,7 +183,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div className="mt-5 flex justify-end px-4">
-                {isMyProfile && <EditProfileModal />}
+                {isMyProfile && <EditProfileModal authUser={authUser} />}
                 {!isMyProfile && (
                   <button
                     className="btn btn-outline btn-sm rounded-full"
@@ -161,9 +197,13 @@ const ProfilePage = () => {
                 {(coverImg || profileImg) && (
                   <button
                     className="btn btn-primary btn-sm ml-2 rounded-full px-4 text-white"
-                    onClick={() => alert("Profile updated successfully")}
+                    onClick={() => updateProfile()}
                   >
-                    Update
+                    {isUpdatingProfile ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      "Update"
+                    )}
                   </button>
                 )}
               </div>
@@ -183,12 +223,12 @@ const ProfilePage = () => {
                       <>
                         <FaLink className="h-3 w-3 text-slate-500" />
                         <a
-                          href="https://youtube.com/@asaprogrammer_"
+                          href={user?.link}
                           target="_blank"
                           rel="noreferrer"
                           className="text-sm text-blue-500 hover:underline"
                         >
-                          youtube.com/@asaprogrammer_
+                          {user?.link}
                         </a>
                       </>
                     </div>
