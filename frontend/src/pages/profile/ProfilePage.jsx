@@ -5,8 +5,6 @@ import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
 import EditProfileModal from "./EditProfileModal";
 
-import { POSTS } from "../../utils/db/dummy";
-
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
@@ -46,10 +44,14 @@ const ProfilePage = () => {
         }
         return data;
       } catch (error) {
-        console.log("eta? Error fetching user profile", error);
+        console.log("Error fetching user profile", error);
         throw new Error(error);
       }
     },
+  });
+
+  const { data: posts, refetch: refetchPosts } = useQuery({
+    queryKey: ["posts"],
   });
 
   const { updateProfile, isUpdatingProfile } = useUpdateProfile();
@@ -94,7 +96,8 @@ const ProfilePage = () => {
                 <div className="flex flex-col">
                   <p className="text-lg font-bold">{user?.fullName}</p>
                   <span className="text-sm text-slate-500">
-                    {POSTS?.length} posts
+                    {/* TODO  */}
+                    {posts?.length} posts
                   </span>
                 </div>
               </div>
@@ -168,6 +171,7 @@ const ProfilePage = () => {
                       await updateProfile({ coverImg, profileImg });
                       setCoverImg(null);
                       setProfileImg(null);
+                      refetchPosts(); // Refetch posts after profile update
                     }}
                   >
                     {isUpdatingProfile ? (
@@ -249,7 +253,12 @@ const ProfilePage = () => {
             </>
           )}
 
-          <Posts feedType={feedType} username={username} userId={user?._id} />
+          <Posts
+            feedType={feedType}
+            username={username}
+            userId={user?._id}
+            refetchPosts={refetchPosts}
+          />
         </div>
       </div>
     </>
