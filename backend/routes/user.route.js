@@ -1,15 +1,17 @@
 import express from "express";
 import { protectRoute } from "../middleware/protectRoute.js";
 import {
-  followUnfollowUser,
-  getSuggestedUsers,
-  getUserProfile,
-  updateUserProfile,
+    followUnfollowUser,
+    getSuggestedUsers,
+    getUserProfile,
+    searchUser,
+    updateUserProfile,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
 router.get("/profile/:username", protectRoute, getUserProfile);
+router.get("/search/:username", protectRoute, searchUser);
 router.get("/suggested", protectRoute, getSuggestedUsers);
 router.post("/follow/:id", protectRoute, followUnfollowUser);
 router.post("/update", protectRoute, updateUserProfile);

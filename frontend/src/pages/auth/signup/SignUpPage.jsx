@@ -38,7 +38,6 @@ const SignUpPage = () => {
             data.error || "Failed to create accout. Something went wrong",
           );
 
-        console.log("data", data);
         return data;
       } catch (error) {
         console.error(error);

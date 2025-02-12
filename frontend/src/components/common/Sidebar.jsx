@@ -3,7 +3,7 @@ import XSvg from "../svgs/X";
 
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
-import { FaUser } from "react-icons/fa";
+import { FaSearch, FaUser } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -60,13 +60,23 @@ const Sidebar = () => {
             </Link>
           </li>
 
-          <li className="flex justify-center md:justify-start">
+          <li className="flex justify-center md:hidden md:justify-start">
             <Link
               to={`/profile/${authUser?.username}`}
               className="flex max-w-fit cursor-pointer items-center gap-3 rounded-full py-2 pr-4 pl-2 transition-all duration-300 hover:bg-stone-900"
             >
               <FaUser className="h-6 w-6" />
               <span className="hidden text-lg md:block">Profile</span>
+            </Link>
+          </li>
+
+          <li className="flex justify-center md:justify-start">
+            <Link
+              to={`/search`}
+              className="flex max-w-fit cursor-pointer items-center gap-3 rounded-full py-2 pr-4 pl-2 transition-all duration-300 hover:bg-stone-900"
+            >
+              <FaSearch className="h-6 w-6" />
+              <span className="hidden text-lg md:block">Search</span>
             </Link>
           </li>
         </ul>

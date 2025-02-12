@@ -8,7 +8,6 @@ import EditProfileModal from "./EditProfileModal";
 import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
-import { MdEdit } from "react-icons/md";
 
 import { useQuery } from "@tanstack/react-query";
 import { formatMemberSinceDate } from "../../utils/date";
@@ -44,7 +43,6 @@ const ProfilePage = () => {
         }
         return data;
       } catch (error) {
-        console.log("Error fetching user profile", error);
         throw new Error(error);
       }
     },
@@ -105,17 +103,12 @@ const ProfilePage = () => {
               <div className="group/cover relative">
                 <img
                   src={coverImg || user?.coverImg || "/cover.png"}
-                  className="h-52 w-full object-cover"
                   alt="cover image"
+                  className="h-52 w-full cursor-pointer object-cover"
+                  {...(isMyProfile && {
+                    onClick: () => profileImgRef.current.click(),
+                  })}
                 />
-                {isMyProfile && (
-                  <div
-                    className="bg-opacity-75 absolute top-2 right-2 cursor-pointer rounded-full bg-gray-800 p-2 opacity-0 transition duration-200 group-hover/cover:opacity-100"
-                    onClick={() => coverImgRef.current.click()}
-                  >
-                    <MdEdit className="h-5 w-5 text-white" />
-                  </div>
-                )}
 
                 <input
                   type="file"
@@ -140,15 +133,11 @@ const ProfilePage = () => {
                         user?.profileImg ||
                         "/avatar-placeholder.png"
                       }
+                      className="cursor-pointer"
+                      {...(isMyProfile && {
+                        onClick: () => profileImgRef.current.click(),
+                      })}
                     />
-                    <div className="bg-primary absolute top-5 right-3 cursor-pointer rounded-full p-1 opacity-0 group-hover/avatar:opacity-100">
-                      {isMyProfile && (
-                        <MdEdit
-                          className="h-4 w-4 text-white"
-                          onClick={() => profileImgRef.current.click()}
-                        />
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>
